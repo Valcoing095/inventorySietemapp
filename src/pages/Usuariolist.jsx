@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import {VITE_API_URL} from "../configenv"
 
-const API_USUARIOS = "http://127.0.0.1:8000/equipmentInventory/api/usuarios/";
-const API_SEDES = "http://127.0.0.1:8000/equipmentInventory/api/sedes/";
-const API_DEPARTAMENTOS = "http://127.0.0.1:8000/equipmentInventory/api/departamentos/";
+const API_USUARIOS = `${VITE_API_URL}/equipmentInventory/api/usuarios/`
+const API_SEDES = `${VITE_API_URL}/equipmentInventory/api/empresa-sedes/`
+const API_DEPARTAMENTOS = `${VITE_API_URL}/equipmentInventory/api/departamentos/`
 
 const UsuarioList = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -20,6 +21,7 @@ const UsuarioList = () => {
     axios.get(API_USUARIOS).then(response => setUsuarios(response.data)).catch(error => console.error("Error al cargar usuarios:", error));
     axios.get(API_SEDES).then(response => setSedes(response.data)).catch(error => console.error("Error al cargar sedes:", error));
     axios.get(API_DEPARTAMENTOS).then(response => setDepartamentos(response.data)).catch(error => console.error("Error al cargar departamentos:", error));
+
   }, []);
 
   const handleFiltroChange = (e, setFiltro) => setFiltro(e.target.value);
@@ -85,7 +87,7 @@ const UsuarioList = () => {
                   <input type="text" className="form-control mb-2" placeholder="Usuario de dominio" name="username_ad" value={nuevoUsuario.username_ad} onChange={handleChange} required />
                   <select className="form-control mb-2" name="empresa_sede" value={nuevoUsuario.empresa_sede} onChange={handleChange} required>
                     <option value="">Seleccione una Sede</option>
-                    {sedes.map(sede => <option key={sede.id} value={sede.id}>{sede.nombre}</option>)}
+                    {sedes.map(sede => <option key={sede.id} value={sede.id}>{sede.empresa_nombre} - {sede.sede_nombre}</option>)}
                   </select>
                   <select className="form-control mb-2" name="departamento" value={nuevoUsuario.departamento} onChange={handleChange} required>
                     <option value="">Seleccione un Departamento</option>

@@ -2,13 +2,17 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { OverlayTrigger, Tooltip, Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
+import {VITE_API_URL} from "../../configenv"
 
-const API_EQUIPOS = "http://127.0.0.1:8000/equipmentInventory/api/equipos/";
-const API_USUARIOS = "http://127.0.0.1:8000/equipmentInventory/api/usuarios/";
+const API_EQUIPOS = `${VITE_API_URL}//equipmentInventory/api/equipos/`;
+const API_USUARIOS = `${VITE_API_URL}/equipmentInventory/api/usuarios/`;
+const API_CONTRATOS = `${VITE_API_URL}/equipmentInventory/api/contratos/`;
+
 
 const EquipoList = () => {
   const [equipos, setEquipos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
+  const [contratos, setContratos] = useState([]);
   const [filtroEmpresa, setFiltroEmpresa] = useState("");
   const [filtroSede, setFiltroSede] = useState("");
   const [filtroUsuario, setFiltroUsuario] = useState("");
@@ -29,6 +33,7 @@ const EquipoList = () => {
   useEffect(() => {
     axios.get(API_EQUIPOS).then(response => setEquipos(response.data)).catch(error => console.error("Error al cargar equipos:", error));
     axios.get(API_USUARIOS).then(response => setUsuarios(response.data)).catch(error => console.error("Error al cargar usuarios:", error));
+    axios.get(API_CONTRATOS).then(response => setContratos(response.data)).catch(error => console.error("Error al cargar contratos:", error));
   }, []);
 
   const handleFiltroChange = (e, setFiltro) => setFiltro(e.target.value);
@@ -147,6 +152,9 @@ const EquipoList = () => {
 
                 <td>{equipo.serial}</td>
                 <td>{equipo.usuario_name || "Sin usuario asignado"}</td>
+                <td>{equipo.contrato_proveedor}</td>
+                <td>{equipo.contrato_numero}</td>
+                <td>{equipo.costo_unitario}</td>
                 <td>
                   {!equipo.usuario_name || equipo.usuario_name === "Sin usuario asignado" ? (
                     <button className="btn btn-sm btn-success" onClick={() => handleAbrirModalUsuario(equipo)}>Asignar Usuario</button>
@@ -174,6 +182,14 @@ const EquipoList = () => {
                   <input type="text" className="form-control mb-2" placeholder="Modelo" name="modelo" value={nuevoEquipo.modelo} onChange={handleChange} required />
                   <input type="text" className="form-control mb-2" placeholder="Marca" name="marca" value={nuevoEquipo.marca} onChange={handleChange} required />
                   <input type="text" className="form-control mb-2" placeholder="Tipo" name="tipo" value={nuevoEquipo.tipo} onChange={handleChange} required />
+                  <select className="form-control mb-2" name="contrato" value={nuevoEquipo.contrato} onChange={handleChange} required>
+                    <option value="">Seleccione un contrato</option>
+                    {contratos.map(contrato => (
+                      <option key={contrato.id} value={contrato.id}>{contrato.proveedor} - {contrato.num_contrato}</option>
+                    ))}
+                  </select>
+            <input type="number" className="form-control mb-2" placeholder="Costo Unitario" name="costo_unitario" value={nuevoEquipo.costo_unitario} onChange={handleChange} required />
+            
                   <button type="submit" className="btn btn-success mt-3">Guardar</button>
                 </form>
               </div>
