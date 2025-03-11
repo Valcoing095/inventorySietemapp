@@ -7,6 +7,7 @@ import {VITE_API_URL} from "../../configenv"
 const API_EQUIPOS = `${VITE_API_URL}//equipmentInventory/api/equipos/`;
 const API_USUARIOS = `${VITE_API_URL}/equipmentInventory/api/usuarios/`;
 const API_CONTRATOS = `${VITE_API_URL}/equipmentInventory/api/contratos/`;
+const API_CARGA_MASIVA = `${VITE_API_URL}/equipmentInventory/api/equipos/carga_masiva_equipos/`;
 
 
 const EquipoList = () => {
@@ -17,10 +18,13 @@ const EquipoList = () => {
   const [filtroSede, setFiltroSede] = useState("");
   const [filtroUsuario, setFiltroUsuario] = useState("");
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [mostrarModalCarga, setMostrarModalCarga] = useState(false);
+
   const [mostrarModalUsuario, setMostrarModalUsuario] = useState(false);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState("");
+  const [archivo, setArchivo] = useState(null);
   const [nuevoEquipo, setNuevoEquipo] = useState({
     serial: "",
     modelo: "",
@@ -89,6 +93,28 @@ const EquipoList = () => {
       })
       .catch(error => console.error("Error al eliminar usuario:", error));
   };
+  const handleArchivoChange = (e) => {
+    setArchivo(e.target.files[0]);
+  };
+
+  const handleCargaMasiva = () => {
+    if (!archivo) {
+      alert("Por favor, selecciona un archivo Excel.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("archivo", archivo);
+
+    axios.post(API_CARGA_MASIVA, formData, { headers: { "Content-Type": "multipart/form-data" } })
+      .then(response => {
+        alert(response.data.mensaje);
+        setMostrarModalCarga(false);
+        setArchivo(null);
+        axios.get(API_USUARIOS).then(res => setUsuarios(res.data));
+      })
+      .catch(error => console.error("Error en la carga masiva:", error));
+  };
 
   return (
     <div className="container mt-5">
@@ -108,6 +134,7 @@ const EquipoList = () => {
       </div>
       {/* Botón agregar equipo */}
       <button className="btn btn-primary mb-3" onClick={() => setMostrarModal(true)}>Agregar Equipo</button>
+      <button className="btn btn-success mb-3" onClick={() => setMostrarModalCarga(true)}>Carga Masiva</button>
 
       {/* Tabla de Equipos */}
       <table className="table table-striped table-bordered">
@@ -228,6 +255,24 @@ const EquipoList = () => {
             <Button variant="danger" onClick={handleEliminarUsuario}>Eliminar</Button>
           </Modal.Footer>
         </Modal>
+      )}
+
+      {/* Modal para carga masiva */}
+      {mostrarModalCarga && (
+        <div className="modal show d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Carga Masiva de Usuarios</h5>
+                <button type="button" className="close" onClick={() => setMostrarModalCarga(false)}>&times;</button>
+              </div>
+              <div className="modal-body">
+                <input type="file" className="form-control mb-2" accept=".xlsx" onChange={handleArchivoChange} />
+                <button className="btn btn-success mt-3" onClick={handleCargaMasiva}>Cargar</button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
