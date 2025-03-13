@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import {VITE_API_URL} from "../../configenv"
 
 const API_EQUIPOS = `${VITE_API_URL}//equipmentInventory/api/equipos/`;
-const API_USUARIOS = `${VITE_API_URL}/equipmentInventory/api/usuarios/`;
+const API_USUARIOS = `${VITE_API_URL}/equipmentInventory/api/usuarios-ad/`;
 const API_CONTRATOS = `${VITE_API_URL}/equipmentInventory/api/contratos/`;
 const API_CARGA_MASIVA = `${VITE_API_URL}/equipmentInventory/api/equipos/carga_masiva_equipos/`;
 
@@ -35,8 +35,16 @@ const EquipoList = () => {
   });
 
   useEffect(() => {
-    axios.get(API_EQUIPOS).then(response => setEquipos(response.data)).catch(error => console.error("Error al cargar equipos:", error));
-    axios.get(API_USUARIOS).then(response => setUsuarios(response.data)).catch(error => console.error("Error al cargar usuarios:", error));
+    axios.get(API_EQUIPOS)
+      .then(response => setEquipos(response.data))
+      .catch(error => console.error("Error al cargar equipos:", error));
+    // axios.get(API_USUARIOS).then(response => setUsuarios(response.data)).catch(error => console.error("Error al cargar usuarios:", error));
+    axios.get(API_USUARIOS)
+    .then(response => {
+      setUsuarios(response.data.usuarios);
+      console.log("Usuarios:", response.data); // 🔍 Verifica qué estructura tiene la respuesta
+    })
+    .catch(error => console.error("Error al cargar usuarios:", error));
     axios.get(API_CONTRATOS).then(response => setContratos(response.data)).catch(error => console.error("Error al cargar contratos:", error));
   }, []);
 
@@ -64,7 +72,7 @@ const EquipoList = () => {
 
     axios.patch(`${API_EQUIPOS}${equipoSeleccionado.id}/`, { usuario: usuarioSeleccionado })
       .then(() => {
-        setEquipos(equipos.map(e => e.id === equipoSeleccionado.id ? { ...e, usuario_name: usuarios.find(u => u.id == usuarioSeleccionado)?.nombre } : e));
+        setEquipos(equipos.map(e => e.id === equipoSeleccionado.id ? { ...e, usuario: usuarios.find(u => u.id == usuarioSeleccionado)?.nombre } : e));
         setMostrarModalUsuario(false);
         setEquipoSeleccionado(null);
         setUsuarioSeleccionado("");
@@ -141,6 +149,7 @@ const EquipoList = () => {
         <thead className="thead-dark">
           <tr>
             <th>Modelo</th>
+            <th>Nombre</th>
             <th>Serial</th>
             <th>Usuario</th>
             <th>Proveedor</th>
@@ -167,8 +176,9 @@ const EquipoList = () => {
                       <strong>Serial:</strong> {equipo.serial} <br />
                       <strong>Marca:</strong> {equipo.marca} <br />
                       <strong>Tipo:</strong> {equipo.tipo} <br />
-                      <strong>Sede:</strong> {equipo.sede_nombre || "No asignada"} <br />
-                      <strong>Empresa:</strong> {equipo.empresa_nombre || "No asignada"}
+                      <strong>Procesador:</strong> {equipo.procesador} <br />
+                      <strong>Ram:</strong> {equipo.ram}
+                      <strong>Disco duro:</strong>{equipo.disco_duro}
                     </Tooltip>
                   }
                 >
@@ -176,9 +186,9 @@ const EquipoList = () => {
                     {equipo.modelo}
                   </td>
                 </OverlayTrigger>
-
+                <td>{equipo.nombre || "Sin asignar"}</td>
                 <td>{equipo.serial}</td>
-                <td>{equipo.usuario_name || "Sin usuario asignado"}</td>
+                <td>{equipo.usuario || "Sin usuario asignado"}</td>
                 <td>{equipo.contrato_proveedor}</td>
                 <td>{equipo.contrato_numero}</td>
                 <td>{equipo.costo_unitario}</td>
@@ -224,16 +234,43 @@ const EquipoList = () => {
           </div>
         </div>
       )}
-      {/* Modal para asignar usuario */}
+      
       {mostrarModalUsuario && equipoSeleccionado && (
         <Modal show={mostrarModalUsuario} onHide={() => setMostrarModalUsuario(false)}>
           <Modal.Header closeButton>
             <Modal.Title>Asignar Usuario</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <select className="form-control" value={usuarioSeleccionado} onChange={(e) => setUsuarioSeleccionado(e.target.value)} required>
+            {/* Agregamos un input para filtrar usuarios */}
+            <input
+              type="text"
+              className="form-control mb-2"
+              placeholder="Buscar usuario por nombre o empresa..."
+              value={filtroUsuario} // Evitar que sea undefined
+              onChange={(e) => setFiltroUsuario(e.target.value)}
+            />
+            
+            <select 
+              className="form-control" 
+              value={usuarioSeleccionado} 
+              onChange={(e) => setUsuarioSeleccionado(e.target.value)} 
+              required
+            >
               <option value="">Seleccione un usuario</option>
-              {usuarios.map(user => <option key={user.id} value={user.id}>{user.nombre}</option>)}
+              
+              {usuarios
+                .filter(user => {
+                  const nombre = user.nombre?.toLowerCase() || ""; // Si es undefined, usar ""
+                  const empresa = user.empresa?.toLowerCase() || "";
+                  const filtro = filtroUsuario?.toLowerCase() || ""; // Si es undefined, usar ""
+                  
+                  return nombre.includes(filtro) || empresa.includes(filtro);
+                })
+                .map(user => (
+                  <option key={user.user_AD} value={user.user_AD}>
+                    {user.nombre} ({user.user_AD}) - {user.empresa}
+                  </option>
+                ))}
             </select>
           </Modal.Body>
           <Modal.Footer>
@@ -242,6 +279,7 @@ const EquipoList = () => {
           </Modal.Footer>
         </Modal>
       )}
+
 
       {/* Modal de confirmación antes de eliminar usuario */}
       {mostrarConfirmacion && (

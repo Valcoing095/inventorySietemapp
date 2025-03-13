@@ -17,7 +17,7 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Card Usuarios */}
+        {/* Card Usuarios
         <div className="col-md-4">
           <div className="card shadow-sm">
             <div className="card-body">
@@ -26,7 +26,7 @@ const Home = () => {
               <Link to="/usuarios" className="btn btn-primary">Ir a Usuarios</Link>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Card Contratos */}
         <div className="col-md-4">
