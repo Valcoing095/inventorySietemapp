@@ -36,13 +36,21 @@ const EquipoList = () => {
 
   useEffect(() => {
     axios.get(API_EQUIPOS)
-      .then(response => setEquipos(response.data))
+      .then(response =>{
+        setEquipos(response.data)
+
+        console.log("Serial:", response.data);
+        console.log("Usuario:", response.data[10].usuario_info.empresa);
+        console.log("Empresa del usuario:", response.data.usuario_info?.empresa || "No disponible")
       .catch(error => console.error("Error al cargar equipos:", error));
     // axios.get(API_USUARIOS).then(response => setUsuarios(response.data)).catch(error => console.error("Error al cargar usuarios:", error));
+      })
+
+      
     axios.get(API_USUARIOS)
     .then(response => {
       setUsuarios(response.data.usuarios);
-      console.log("Usuarios:", response.data); // 🔍 Verifica qué estructura tiene la respuesta
+      console.log("Usuarios:", response.data.usuarios); // 🔍 Verifica qué estructura tiene la respuesta
     })
     .catch(error => console.error("Error al cargar usuarios:", error));
     axios.get(API_CONTRATOS).then(response => setContratos(response.data)).catch(error => console.error("Error al cargar contratos:", error));
@@ -95,7 +103,7 @@ const EquipoList = () => {
   const handleEliminarUsuario = () => {
     axios.patch(`${API_EQUIPOS}${equipoSeleccionado.id}/`, { usuario: null })
       .then(() => {
-        setEquipos(equipos.map(e => e.id === equipoSeleccionado.id ? { ...e, usuario_name: "Sin usuario asignado" } : e));
+        setEquipos(equipos.map(e => e.id === equipoSeleccionado.id ? { ...e, usuario: "Sin usuario asignado" } : e));
         setMostrarConfirmacion(false);
         setEquipoSeleccionado(null);
       })
@@ -152,6 +160,9 @@ const EquipoList = () => {
             <th>Nombre</th>
             <th>Serial</th>
             <th>Usuario</th>
+            <th>Nombre</th>
+            <th>Empresa</th>
+            <th>Sede</th>
             <th>Proveedor</th>
             <th>Contrato</th>
             <th>Costo Unitario</th>
@@ -161,9 +172,9 @@ const EquipoList = () => {
         <tbody>
           {equipos
             .filter(e =>
-              (filtroEmpresa ? (e.empresa_nombre || "").includes(filtroEmpresa) : true) &&
-              (filtroSede ? (e.sede_nombre || "").includes(filtroSede) : true) &&
-              (filtroUsuario ? (e.usuario_name || "").includes(filtroUsuario) : true)
+              (filtroEmpresa ? (e.usuario_info?.empresa || "").toLowerCase().includes(filtroEmpresa.toLowerCase()) : true) &&
+              (filtroUsuario ? (e.usuario_info?.nombre || "").toLowerCase().includes(filtroUsuario.toLowerCase()) : true) &&
+              (filtroSede ? (e.usuario_info?.sede || "").toLowerCase().includes(filtroSede.toLowerCase()) : true) 
             )
             .map((equipo) => (
               <tr key={equipo.id}>
@@ -177,8 +188,8 @@ const EquipoList = () => {
                       <strong>Marca:</strong> {equipo.marca} <br />
                       <strong>Tipo:</strong> {equipo.tipo} <br />
                       <strong>Procesador:</strong> {equipo.procesador} <br />
-                      <strong>Ram:</strong> {equipo.ram}
-                      <strong>Disco duro:</strong>{equipo.disco_duro}
+                      <strong>Ram:</strong> {equipo.ram}<br/>
+                      <strong>Disco duro:</strong>{equipo.disco_duro}<br/>
                     </Tooltip>
                   }
                 >
@@ -189,11 +200,14 @@ const EquipoList = () => {
                 <td>{equipo.nombre || "Sin asignar"}</td>
                 <td>{equipo.serial}</td>
                 <td>{equipo.usuario || "Sin usuario asignado"}</td>
+                <td>{equipo.usuario_info?.nombre || "No disponible"}</td>
+                <td>{equipo.usuario_info?.empresa || "No disponible"}</td> 
+                <td>{equipo.usuario_info?.sede || "No disponible"}</td>
                 <td>{equipo.contrato_proveedor}</td>
                 <td>{equipo.contrato_numero}</td>
                 <td>{equipo.costo_unitario}</td>
                 <td>
-                  {!equipo.usuario_name || equipo.usuario_name === "Sin usuario asignado" ? (
+                  {!equipo.usuario || equipo.usuario === "Sin usuario asignado" ? (
                     <button className="btn btn-sm btn-success" onClick={() => handleAbrirModalUsuario(equipo)}>Asignar Usuario</button>
                   ) : (
                     <button className="btn btn-sm btn-danger" onClick={() => handleAbrirModalEliminar(equipo)}>Eliminar Usuario</button>
