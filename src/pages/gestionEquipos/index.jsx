@@ -17,17 +17,6 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Card Usuarios
-        <div className="col-md-4">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <h5 className="card-title">Usuarios</h5>
-              <p className="card-text">Gestiona los usuarios y sus asignaciones.</p>
-              <Link to="/usuarios" className="btn btn-primary">Ir a Usuarios</Link>
-            </div>
-          </div>
-        </div> */}
-
         {/* Card Contratos */}
         <div className="col-md-4">
           <div className="card shadow-sm">

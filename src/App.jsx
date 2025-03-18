@@ -3,6 +3,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Equipos from "./pages/gestionEquipos/Equipolist";
 import Usuarios from "./pages/Usuariolist";
 import Gestion from "./pages/gestionEquipos/index"
+import Informes from "./pages/gestionEquipos/informes" 
+import InformeCentroCosto from './informes/InformeCentroCosto';
 import ContratoList from "./pages/gestionEquipos/Contratolist"
 // import Impresoras from "./Impresoras";
 
@@ -31,6 +33,8 @@ function App() {
             <Route path="/contratos" element={<ContratoList/>}/>
             <Route path="/equipos" element={<Equipos />} />
             <Route path="/usuarios" element={<Usuarios />} />
+            <Route path="/informeCentrocosto" element={<InformeCentroCosto />} />
+            <Route path="/informes" element={<Informes />} />
             <Route path="/impresoras"  />
           </Routes>
         </div>
